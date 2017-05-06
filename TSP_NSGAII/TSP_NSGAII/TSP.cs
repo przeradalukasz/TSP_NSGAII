@@ -59,11 +59,11 @@ namespace TSP_NSGAII
 
                 //a population needs to know the towns and the matrix
                 //mutation rate, population size
-                Population population = new Population(AdjacencyMatrix, Towns, 0.05, 500, rnd);
+                Population population = new Population(AdjacencyMatrix, Towns, 0.05, 2000, rnd);
 
 
                 //haven't found a better route in 100 generations, probably won't
-                while (population.SinceChange < 20)
+                while (population.SinceChange < 1)
                 {
 
                     // Generate mating pool
@@ -133,7 +133,7 @@ namespace TSP_NSGAII
                 }
             }
 
-            bmp.Save(@"C:\Users\ronal_000\Desktop\dj.bmp");
+            bmp.Save(@"C:\Users\ronal_000\Desktop\dj2.bmp");
         }
     }
 }

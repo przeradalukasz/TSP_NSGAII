@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TSP_NSGAII;
 
 namespace TSP_NSGAII
 {
@@ -19,7 +18,6 @@ namespace TSP_NSGAII
         private double[,] Matrix { get; set; } //1-indexed matrix
         public double FitnessDistance { get; set; }
         public double FitnessUnbalancingDegree { get; set; }
-
         public Random rnd;
 
         //constructor used for random paths
@@ -144,12 +142,22 @@ namespace TSP_NSGAII
             }
             return result;
         }
-
         public double CalcUnbalancingDegree()
         {
+            double minDistance = 100000.0;
+            double maxDistance = 0.0;
             
-            return 0;
+            for (int i = 0; i < Towns.Length - 1; i++)
+            {
+                double currentDistance = Matrix[Towns[i].Id, Towns[i + 1].Id];
+                if (currentDistance < minDistance)
+                    minDistance = currentDistance;
+                if (currentDistance > maxDistance)
+                    maxDistance = currentDistance;
+            }
+            return maxDistance - minDistance;
         }
+        
 
         //at the start random paths are required. but they must be valid
         public void RandomPath()

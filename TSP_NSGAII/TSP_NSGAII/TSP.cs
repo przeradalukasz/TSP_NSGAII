@@ -59,11 +59,11 @@ namespace TSP_NSGAII
 
                 //a population needs to know the towns and the matrix
                 //mutation rate, population size
-                Population population = new Population(AdjacencyMatrix, Towns, 0.05, 2000, rnd);
+                Population population = new Population(AdjacencyMatrix, Towns, 0.05, 500, rnd);
 
 
                 //haven't found a better route in 100 generations, probably won't
-                while (population.SinceChange < 1)
+                while (population.Generations < 100)
                 {
 
                     // Generate mating pool
@@ -71,10 +71,11 @@ namespace TSP_NSGAII
                     //Create next generation
                     population.Generate();
                     // Calculate fitness
-                    population.CalcFitness();
+                    //population.CalcFitness();
                 }
 
-                bests[i] = population.AllTime;//add the run's best path to the array of best paths
+                population.Children.GetEnumerator();
+                
             }
 
 

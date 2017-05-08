@@ -15,6 +15,8 @@ namespace TSP_NSGAII
         public static Town[] Towns { get; set; } //0-indexed!
 
         private static readonly Random rnd = new Random(DateTime.Now.Millisecond);
+
+        public static List<List<Path>> fronts = new List<List<Path>>();
         static void Main()
         {
             //double start = System.();
@@ -54,33 +56,27 @@ namespace TSP_NSGAII
             //save the best path from each run
             Path[] bests = new Path[runs];
 
-            for (int i = 0; i < runs; i++)
+            //a population needs to know the towns and the matrix
+            //mutation rate, population size
+            Population population = new Population(AdjacencyMatrix, Towns, 0.05, 500, rnd);
+
+
+            //haven't found a better route in 100 generations, probably won't
+            while (population.Generations < 500)
             {
 
-                //a population needs to know the towns and the matrix
-                //mutation rate, population size
-                Population population = new Population(AdjacencyMatrix, Towns, 0.05, 500, rnd);
-
-
-                //haven't found a better route in 100 generations, probably won't
-                while (population.Generations < 100)
-                {
-
-                    // Generate mating pool
-                    population.NaturalSelection();
-                    //Create next generation
-                    population.Generate();
-                    // Calculate fitness
-                    //population.CalcFitness();
-                }
-
-                population.Children.GetEnumerator();
-                
+                // Generate mating pool
+                population.NaturalSelection();
+                //Create next generation
+                population.Generate();
+                // Calculate fitness
+                //
             }
+            population.NaturalSelection();
 
 
             //find the best of the best
-            Path best = bests[0];
+            Path best = population.Fronts[0].OrderBy(x => x.Distance).First();
             Console.WriteLine("\nbests [0]: " + best.Distance);
 
             for (int i = 1; i < runs; i++)

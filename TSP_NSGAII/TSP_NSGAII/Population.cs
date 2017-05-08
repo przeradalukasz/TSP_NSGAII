@@ -23,6 +23,7 @@ namespace TSP_NSGAII
         
         public double[,] AdjacencyMatrix;
         public Town[] Towns;
+        public List<List<Path>> Fronts;
 
         Random rnd;
 
@@ -55,6 +56,7 @@ namespace TSP_NSGAII
             //CalcFitness(); //called here rather than the main method on initialisation
 
             matingPool = new ArrayList();
+            Fronts = new List<List<Path>>();
         }
 
         //very important for the makeup of the mating pool
@@ -154,13 +156,13 @@ namespace TSP_NSGAII
         //The all-time best Path is also added to make sure the mating pool has at least one instance of it.
         public void NaturalSelection()
         {
-            Pop = Children.Concat(Children).ToArray();
+            Pop = Children.Concat(Parents).ToArray();
 
             CalcFitness();
 
             matingPool.Clear();
-
-            List<List<Path>> fronts = new List<List<Path>>();
+            Fronts.Clear();
+            
             
             int i = 0;
             while (Pop.Length != 0)
@@ -168,18 +170,18 @@ namespace TSP_NSGAII
                 List<Path> front = GetNondominatedIndividuals(Pop);
                 if (front.Count == 0)
                 {
-                    fronts.Add(Pop.ToList());
+                    Fronts.Add(Pop.ToList());
                     break;
                 }
-                fronts.Add(front);
-                foreach (var path in fronts[i])
+                Fronts.Add(front);
+                foreach (var path in Fronts[i])
                 {
                     Pop = Pop.Where(val => val != path).ToArray();
                 }
                 i++;
             }
             int diff = popSize;
-            foreach (var front in fronts)
+            foreach (var front in Fronts)
             {
                 if (front.Count <= diff)
                 {
@@ -207,11 +209,11 @@ namespace TSP_NSGAII
         public void Generate()
         {
             int j = 0;
-            //foreach (var child in Children)
-            //{
-            //    Parents[j] = new Path(AdjacencyMatrix, Towns, child.Towns, rnd);
-            //}
-            
+            foreach (var child in Children)
+            {
+                Parents[j] = new Path(AdjacencyMatrix, Towns, child.Towns, rnd);
+            }
+
 
             // Refill the population with children from the mating pool
             for (int i = 1; i < Children.Length; i++)
@@ -235,12 +237,12 @@ namespace TSP_NSGAII
 
         }
 
-        private List<Path> GetNondominatedIndividuals(Path[] population)
+        public List<Path> GetNondominatedIndividuals(Path[] population)
         {
             var pNondominated = new List<Path>();
-            foreach (var individualToCheck in Pop)
+            foreach (var individualToCheck in population)
             {
-                bool isDominated = Pop.Where(individual => !individualToCheck.Equals(individual)).Any(individual => Dominates(individualToCheck, individual));
+                bool isDominated = population.Where(individual => !individualToCheck.Equals(individual)).Any(individual => Dominates(individualToCheck, individual));
 
                 if (!isDominated)
                 {
@@ -250,7 +252,7 @@ namespace TSP_NSGAII
             return pNondominated;
         }
 
-        private bool Dominates(Path individualToCheck, Path individual)
+        public bool Dominates(Path individualToCheck, Path individual)
         {
             bool betterForAllCriteriums = true;
 

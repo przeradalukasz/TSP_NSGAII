@@ -10,159 +10,58 @@ namespace TSP_NSGAII
 {
     public class Population
     {
-        private ArrayList matingPool;
-        private double mutationRate;
-        private int popSize;
-        public Path[] Pop { get; set; }
-        public Path[] Children { get; set; }
-
-        public Path[] Parents { get; set; }
+        private readonly List<Path> _matingPool;
+        private readonly double _mutationRate;
+        private readonly double _crossoverRate;
+        private readonly double _tournamentSize;
+        private readonly int _popSize;
+        private readonly Random _rnd;
 
         public int Generations;
         public int SinceChange;
-        
+
         public double[,] AdjacencyMatrix;
         public Town[] Towns;
         public List<List<Path>> Fronts;
-
-        Random rnd;
-
-        //This is called by the main method
-        public Population(double[,] adjacencyMatrix, Town[] towns, double mutationRate, int num, Random random)
+        public Path[] Pop { get; set; }
+        public Path[] Children { get; set; }
+        public Path[] Parents { get; set; }
+        public Population(double[,] adjacencyMatrix, Town[] towns, double mutationRate, double crossoverRate, double tournamentSize, int num, Random random)
         {
-            this.mutationRate = mutationRate;
+            this._mutationRate = mutationRate;
+            this._crossoverRate = crossoverRate;
+            _tournamentSize = tournamentSize;
             AdjacencyMatrix = adjacencyMatrix;
             Towns = towns;
-            rnd = random;
+            _rnd = random;
             Children = new Path[num];
             Parents = new Path[num];
-            popSize = num;
+            _popSize = num;
             for (int i = 0; i < Parents.Length; i++)
             {
-                //populate with random paths
-                Path temp = new Path(adjacencyMatrix, towns, rnd);
+                Path temp = new Path(adjacencyMatrix, towns, _rnd);
                 temp.RandomPath();
                 Parents[i] = temp;
             }
             for (int i = 0; i < Children.Length; i++)
             {
-                //populate with random paths
-                Path temp = new Path(adjacencyMatrix, towns, rnd);
+                Path temp = new Path(adjacencyMatrix, towns, _rnd);
                 temp.RandomPath();
                 Children[i] = temp;
             }
             
             SinceChange = 0;
-            //CalcFitness(); //called here rather than the main method on initialisation
 
-            matingPool = new ArrayList();
+            _matingPool = new List<Path>();
             Fronts = new List<List<Path>>();
         }
 
-        //very important for the makeup of the mating pool
-        public void CalcFitness()
-        {
-            CalcFitnessFirstObj();
-            CalcFitnessSecondObj();
-            
-        }
-
-        private void CalcFitnessFirstObj()
-        {
-            //get unique distances of Paths in the population
-            ArrayList dists = new ArrayList();
-            for (int i = 0; i < Pop.Length; i++)
-            {
-                double dist = 1 / Pop[i].Distance;
-                if (!dists.Contains(dist))
-                {
-                    dists.Add(dist);
-                }
-            }
-
-            //convert arraylist to array
-            ArrayList ascendingDists = new ArrayList(dists.Count);
-            for (int i = 0; i < ascendingDists.Capacity; i++)
-            {
-                double temp = (double)dists[i];
-                ascendingDists.Add(temp);
-            }
-            ascendingDists.Sort();
-            //ascendingDists.Reverse();//sort to ascending order
-
-            for (int i = 0; i < Pop.Length; i++)
-            {
-
-                for (int j = 0; j < ascendingDists.Count; j++)
-                {
-                    double lol = Math.Abs((1 / Pop[i].Distance) - (double)ascendingDists[j]);
-                    if (lol < 0.0000000000000000000001)
-                    {
-                        //fitness is successive integers raised to the power of 4.
-                        //need to keep distance between better Paths to reward difference
-                        //at the higher end.
-                        Pop[i].FitnessDistance = Math.Pow(j, 4);
-                        break;
-                    }
-                }
-
-            }
-        }
-
-        private void CalcFitnessSecondObj()
-        {
-            //get unique distances of Paths in the population
-            ArrayList degree = new ArrayList();
-            for (int i = 0; i < Pop.Length; i++)
-            {
-                double deg = 1 / Pop[i].UnbalancingDegree;
-                if (!degree.Contains(deg))
-                {
-                    degree.Add(deg);
-                }
-            }
-
-            //convert arraylist to array
-            ArrayList ascendingDegree = new ArrayList(degree.Count);
-            for (int i = 0; i < ascendingDegree.Capacity; i++)
-            {
-                double temp = (double)degree[i];
-                ascendingDegree.Add(temp);
-            }
-            ascendingDegree.Sort();
-            //ascendingDists.Reverse();//sort to ascending order
-
-            for (int i = 0; i < Pop.Length; i++)
-            {
-
-                for (int j = 0; j < ascendingDegree.Count; j++)
-                {
-                    double lol = Math.Abs((1 / Pop[i].UnbalancingDegree) - (double)ascendingDegree[j]);
-                    if (lol < 0.0000000000000000000001)
-                    {
-                        //fitness is successive integers raised to the power of 4.
-                        //need to keep distance between better Paths to reward difference
-                        //at the higher end.
-                        Pop[i].FitnessUnbalancingDegree = Math.Pow(j, 4);
-                        break;
-                    }
-                }
-
-            }
-        }
-
-
-        //Fill the mating pool according to each Path's relative fitness.
-        //The all-time best Path is also added to make sure the mating pool has at least one instance of it.
         public void NaturalSelection()
         {
             Pop = Children.Concat(Parents).ToArray();
 
-            CalcFitness();
-
-            matingPool.Clear();
+            _matingPool.Clear();
             Fronts.Clear();
-            
             
             int i = 0;
             while (Pop.Length != 0)
@@ -180,58 +79,120 @@ namespace TSP_NSGAII
                 }
                 i++;
             }
-            int diff = popSize;
+            int diff = _popSize;
             foreach (var front in Fronts)
             {
                 if (front.Count <= diff)
                 {
-                    matingPool.AddRange(front);
+                    _matingPool.AddRange(front);
                     diff = diff - front.Count;
                 }
                 else
                 {
-                    CalculateCrowdedCist(front);
-                    matingPool.AddRange(front.Take(diff).ToList());
-                    diff = 0;
+                    CalculateCrowdedDist(front);
+                    _matingPool.AddRange(front.Take(diff).ToList());
                     break;
                 }
             }
-            
-
 
         }
 
-        private void CalculateCrowdedCist(List<Path> front)
+        private void CalculateCrowdedDist(List<Path> front)
         {
+            front = front.OrderBy(x => x.Distance).ToList();
+            front.First().CrowdedDistance = Double.MaxValue; ;
+            front.Last().CrowdedDistance = Double.MaxValue;
+            List<Path> noBoundaryPop = new List<Path>();
+            noBoundaryPop.AddRange(front);
+            noBoundaryPop.RemoveAt(0);
+            noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+
+            foreach (var path in noBoundaryPop)
+            {
+                path.CrowdedDistance = FirstObjCrowdedDistance(path,front);
+                
+            }
+            front = front.OrderBy(x => x.UnbalancingDegree).ToList();
+            front.First().CrowdedDistance = Double.MaxValue; ;
+            front.Last().CrowdedDistance = Double.MaxValue;
+            noBoundaryPop = new List<Path>();
+            noBoundaryPop.AddRange(front);
+            noBoundaryPop.RemoveAt(0);
+            noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+            foreach (var path in noBoundaryPop)
+            {
+                path.CrowdedDistance = path.CrowdedDistance + SecondObjCrowdedDistance(path, front);
+            }
+
+        }
+
+        private double SecondObjCrowdedDistance(Path path, List<Path> front)
+        {
+            var index = front.FindIndex(p=>p.Equals(path));
+            return front[index + 1].UnbalancingDegree - front[index - 1].UnbalancingDegree;
             
+        }
+
+        private double FirstObjCrowdedDistance(Path path, List<Path> front)
+        {
+            var index = front.FindIndex(p => p.Equals(path));
+            return front[index + 1].Distance - front[index - 1].Distance;
         }
 
         public void Generate()
         {
-            int j = 0;
-            foreach (var child in Children)
+            int k = 0;
+            foreach (var parent in _matingPool)
             {
-                Parents[j] = new Path(AdjacencyMatrix, Towns, child.Towns, rnd);
+                Parents[k] = new Path(AdjacencyMatrix, Towns, parent.Towns, _rnd);
+                k++;
             }
 
-
-            // Refill the population with children from the mating pool
             for (int i = 1; i < Children.Length; i++)
             {
 
-                int a = (int)(rnd.NextDouble() * matingPool.Count);
-                int b = (int)(rnd.NextDouble() * matingPool.Count);
-                Path partnerA = (Path)matingPool[a];
-                Path partnerB = (Path)matingPool[b];
-                Path child = new Path(AdjacencyMatrix, Towns, partnerA.CrossOver(partnerB), rnd);
-                //System.out.println("crossing "+partnerA.distance+" with "+partnerB.distance);
-                //if(Math.random()<0.5){
-                child.Mutate4(mutationRate);
-                //}else{
-                //	child.mutate(mutationRate);
-                //}
+                int a = (int)(_rnd.NextDouble() * _matingPool.Count);
+                int b = (int)(_rnd.NextDouble() * _matingPool.Count);
+                Path partnerA = (Path)_matingPool[a];
+                Path partnerB = (Path)_matingPool[b];
+                Path child = new Path(AdjacencyMatrix, Towns, partnerA.CrossOver(partnerB), _rnd);
+                child.Mutate4(_mutationRate);
                 Children[i] = child;
+            }
+            Generations++;
 
+        }
+
+        public void GenerateTournament()
+        {
+            int k = 0;
+            foreach (var parent in _matingPool)
+            {
+                Parents[k] = new Path(AdjacencyMatrix, Towns, parent.Towns, _rnd);
+                k++;
+            }
+
+            for (int i = 1; i < Children.Length; i++)
+            {
+                if (_rnd.NextDouble() < _crossoverRate)
+                {
+                    List<Path> tournament = new List<Path>();
+                    for (int j = 0; j < _tournamentSize; j++)
+                    {
+                        int a = (int)(_rnd.NextDouble() * _matingPool.Count);
+                        tournament.Add((Path)_matingPool[a]);
+                    }
+                    Path partnerA = tournament.First();
+                    Path partnerB = tournament.Skip(1).First();
+                    Path child = new Path(AdjacencyMatrix, Towns, partnerA.CrossOver(partnerB), _rnd);
+                    child.Mutate4(_mutationRate);
+                    Children[i] = child;
+                }
+                else
+                {
+                    int a = (int)(_rnd.NextDouble() * _matingPool.Count);
+                    Children[i] = (Path)_matingPool[a];
+                }
             }
             Generations++;
 
@@ -256,7 +217,7 @@ namespace TSP_NSGAII
         {
             bool betterForAllCriteriums = true;
 
-            if (individualToCheck.FitnessDistance > individual.FitnessDistance || individualToCheck.FitnessDistance > individual.FitnessDistance)          
+            if (individualToCheck.Distance < individual.Distance || individualToCheck.UnbalancingDegree < individual.UnbalancingDegree)          
             {
                 betterForAllCriteriums = false;
             }

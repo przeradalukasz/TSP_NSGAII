@@ -58,11 +58,11 @@ namespace TSP_NSGAII
 
             //a population needs to know the towns and the matrix
             //mutation rate, population size
-            Population population = new Population(AdjacencyMatrix, Towns, 0.05, 500, rnd);
+            Population population = new Population(AdjacencyMatrix, Towns, 0.05, 0.95, 10, 500, rnd);
 
 
             //haven't found a better route in 100 generations, probably won't
-            while (population.Generations < 500)
+            while (population.Generations < 100)
             {
 
                 // Generate mating pool
@@ -74,6 +74,22 @@ namespace TSP_NSGAII
             }
             population.NaturalSelection();
 
+            //before your loop
+            var csv = new StringBuilder();
+
+            foreach (var populationChild in population.Children)
+            {
+                //in your loop
+                var first = populationChild.Distance;
+                var second = populationChild.UnbalancingDegree;
+                //Suggestion made by KyleMit
+                var newLine = string.Format("{0};{1}", first, second);
+                csv.AppendLine(newLine);
+            }
+            
+
+            //after your loop
+            File.WriteAllText(@"C:\Users\ronal_000\Desktop\plox.csv", csv.ToString());
 
             //find the best of the best
             Path best = population.Fronts[0].OrderBy(x => x.Distance).First();

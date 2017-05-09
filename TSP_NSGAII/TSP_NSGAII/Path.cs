@@ -18,6 +18,7 @@ namespace TSP_NSGAII
         private double[,] Matrix { get; set; } //1-indexed matrix
         public double FitnessDistance { get; set; }
         public double FitnessUnbalancingDegree { get; set; }
+        public double CrowdedDistance { get; set; }
         public Random rnd;
 
         //constructor used for random paths
@@ -31,6 +32,7 @@ namespace TSP_NSGAII
             Size = 0;
             FitnessDistance = 0.0;
             FitnessUnbalancingDegree = 0.0;
+            CrowdedDistance = 0.0;
             rnd = random;
         }
 
@@ -45,6 +47,7 @@ namespace TSP_NSGAII
             Size = 0;
             FitnessDistance = 0.0;
             FitnessUnbalancingDegree = 0.0;
+            CrowdedDistance = 0.0;
             Distance = CalcDistance();
             UnbalancingDegree = CalcUnbalancingDegree();
             Size = Towns.Length;

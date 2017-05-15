@@ -151,8 +151,10 @@ namespace TSP_NSGAII
             for (int i = 1; i < Children.Length; i++)
             {
 
-                int a = (int)(_rnd.NextDouble() * _matingPool.Count);
-                int b = (int)(_rnd.NextDouble() * _matingPool.Count);
+                //int a = (int)(_rnd.NextDouble() * _matingPool.Count);
+                //int b = (int)(_rnd.NextDouble() * _matingPool.Count);
+                int a = GetBest(_matingPool);
+                int b = GetBest(_matingPool);
                 Path partnerA = (Path)_matingPool[a];
                 Path partnerB = (Path)_matingPool[b];
                 Path child = new Path(AdjacencyMatrix, Towns, partnerA.CrossOver(partnerB), _rnd);
@@ -223,6 +225,20 @@ namespace TSP_NSGAII
             }
 
             return betterForAllCriteriums;
+        }
+
+        private int GetBest(List<Path> matingPool)
+        {
+            int best = -1;
+            for (int i = 0; i < 2; i++)
+            {
+                int ind = (int)(_rnd.NextDouble() * _matingPool.Count);
+                if (best == -1 || best > ind)
+                {
+                    best = ind;
+                }
+            }
+            return best;
         }
     }
 }

@@ -62,7 +62,7 @@ namespace TSP_NSGAII
 
 
             //haven't found a better route in 100 generations, probably won't
-            while (population.Generations < 100)
+            while (population.Generations < 50)
             {
 
                 // Generate mating pool

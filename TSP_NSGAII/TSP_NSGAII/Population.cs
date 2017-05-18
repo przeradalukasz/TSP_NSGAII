@@ -150,7 +150,6 @@ namespace TSP_NSGAII
 
             for (int i = 1; i < Children.Length; i++)
             {
-
                 //int a = (int)(_rnd.NextDouble() * _matingPool.Count);
                 //int b = (int)(_rnd.NextDouble() * _matingPool.Count);
                 int a = GetBest(_matingPool);

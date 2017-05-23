@@ -6,15 +6,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace TSP_NSGAII
 {
     public static class Utils
     {
-        public static Town[] LoadTownsData(string path)
+        public static Town[] LoadTownsDataFromCsv(string path)
         {
             var towns = new Town[TotalLines(@"C:\dj.csv")];
-            PictureBox pp = new PictureBox();
             using (var fs = File.OpenRead(@"C:\dj.csv"))
             using (var reader = new StreamReader(fs))
             {
@@ -31,13 +31,24 @@ namespace TSP_NSGAII
             return towns;
         }
 
-        public static double[,] LoadDistanceData(Town[] towns)
+        public static List<Town> LoadTownsDataFromJson(string path)
         {
-            var adjacencyMatrix = new double[towns.Length + 1, towns.Length + 1];
-            
-            for (int i = 1; i <= towns.Length; i++)
+            List<Town> towns;
+            using (StreamReader r = new StreamReader(path))
             {
-                for (int j = 1; j <= towns.Length; j++)
+                string json = r.ReadToEnd();
+                towns = JsonConvert.DeserializeObject<List<Town>>(json);
+            }
+            return towns;
+        }
+
+        public static double[,] CalculateDistanceMatrix(List<Town> towns)
+        {
+            var adjacencyMatrix = new double[towns.Count + 1, towns.Count + 1];
+            
+            for (int i = 1; i <= towns.Count; i++)
+            {
+                for (int j = 1; j <= towns.Count; j++)
                 {
                     adjacencyMatrix[i, j] = towns[i - 1].DistanceTo(towns[j - 1]);
                 }
@@ -97,6 +108,22 @@ namespace TSP_NSGAII
                 while (r.ReadLine() != null) { i++; }
                 return i;
             }
+        }
+
+        public static FuzzyNumber[,] LoadFuzzyDistanceDataFromJson(string path)
+        {
+            FuzzyNumber[,] adjMatrix;
+            using (StreamReader r = new StreamReader(path))
+            {
+                string json = r.ReadToEnd();
+                adjMatrix = JsonConvert.DeserializeObject<FuzzyNumber[,]>(json);
+            }
+            return adjMatrix;
+        }
+
+        public static double[,] Defuzzification(FuzzyNumber[,] fuzzyAdjacencyMatrix)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -105,7 +105,11 @@ namespace TSP_NSGAII
             List<Path> noBoundaryPop = new List<Path>();
             noBoundaryPop.AddRange(front);
             noBoundaryPop.RemoveAt(0);
-            noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+            if (noBoundaryPop.Count != 0)
+            {
+                noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+            }
+            
 
             foreach (var path in noBoundaryPop)
             {
@@ -118,7 +122,10 @@ namespace TSP_NSGAII
             noBoundaryPop = new List<Path>();
             noBoundaryPop.AddRange(front);
             noBoundaryPop.RemoveAt(0);
-            noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+            if (noBoundaryPop.Count != 0)
+            {
+                noBoundaryPop.RemoveAt(noBoundaryPop.Count - 1);
+            }
             foreach (var path in noBoundaryPop)
             {
                 path.CrowdedDistance = path.CrowdedDistance + SecondObjCrowdedDistance(path, front);

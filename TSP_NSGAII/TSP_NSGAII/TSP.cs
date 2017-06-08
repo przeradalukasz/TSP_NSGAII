@@ -18,13 +18,13 @@ namespace TSP_NSGAII
         
         static void Main()
         {
-            //Towns = Utils.LoadTownsDataFromCsv(@"C:\dj.csv").ToList();
+            Towns = Utils.LoadTownsDataFromCsv(@"C:\dj.csv").ToList();
 
-            Towns = Utils.LoadTownsDataFromJson(@"C:\TSPData\towns.json");
-            FuzzyNumber[,] fuzzyAdjacencyMatrix = Utils.LoadFuzzyDistanceDataFromJson(@"C:\TSPData\adjacencyMatrix.json");
-            AdjacencyMatrix = Utils.Defuzzification(fuzzyAdjacencyMatrix);
+            //Towns = Utils.LoadTownsDataFromJson(@"C:\TSPData\towns.json");
+            //FuzzyNumber[,] fuzzyAdjacencyMatrix = Utils.LoadFuzzyDistanceDataFromJson(@"C:\TSPData\adjacencyMatrix.json");
+            //AdjacencyMatrix = Utils.Defuzzification(fuzzyAdjacencyMatrix);
 
-            //AdjacencyMatrix = Utils.CalculateDistanceMatrix(Towns);
+            AdjacencyMatrix = Utils.CalculateDistanceMatrix(Towns);
 
             Population population = new Population(AdjacencyMatrix, Towns.ToArray(), 0.05, 0.95, 10, 500, rnd);
             
@@ -32,18 +32,19 @@ namespace TSP_NSGAII
             {
                 population.NaturalSelection();
                 population.Generate();
+                Console.WriteLine("Gen" + population.Generations);
             }
             population.NaturalSelection();
 
-            Utils.SaveResultsToCsv(@"C:\Users\ronal_000\Desktop\plox.csv", population);
+            Utils.SaveResultsToCsv2(@"C:\Users\lprzerad\Desktop\Results\results.csv", population.Fronts[0].ToArray());
             
             
             Path bestDistance = population.Fronts[0].OrderBy(x => x.Distance).First();
             Path bestUnbalancing = population.Fronts[0].OrderBy(x => x.UnbalancingDegree).First();
 
 
-            Utils.DrawResultPath(@"C:\Users\ronal_000\Desktop\dj2.bmp", bestDistance.Towns);
-
+            Utils.DrawResultPath(@"C:\Users\lprzerad\Desktop\Results\bestDistanceDrawn.bmp", bestDistance.Towns);
+            Console.WriteLine("Press any key...");
             Console.ReadLine();
 
         }

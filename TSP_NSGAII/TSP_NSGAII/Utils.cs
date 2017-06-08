@@ -83,6 +83,22 @@ namespace TSP_NSGAII
             bmp.Save(path);
         }
 
+        public static void SaveResultsToCsv2(string path, Path[] paths)
+        {
+            var csv = new StringBuilder();
+
+            foreach (var pathEl in paths)
+            {
+
+                var first = Math.Round(pathEl.Distance, 0);
+                var second = Math.Round(pathEl.UnbalancingDegree, 0);
+
+                var newLine = string.Format("{0};{1}", first, second);
+                csv.AppendLine(newLine);
+            }
+            File.WriteAllText(path, csv.ToString());
+        }
+
         public static void SaveResultsToCsv(string path, Population population)
         {
             var csv = new StringBuilder();

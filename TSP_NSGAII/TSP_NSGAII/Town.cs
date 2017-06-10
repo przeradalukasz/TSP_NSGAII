@@ -12,16 +12,16 @@ namespace TSP_NSGAII
         public string Name { get; set; }
         public double X { get; set; }
         public double Y { get; set; }
-        public string Country { get; set; }
-        public string Province { get; set; }
+        public string State { get; set; }
+        public string County { get; set; }
 
-        public Town(int id, double x, double y, string name, string country, string province)
+        public Town(int id, double x, double y, string name, string state, string county)
         {
             Id = id;
             X = x;
             Y = y;
-            Country = country;
-            Province = province;
+            State = state;
+            County = county;
             Name = name;
         }
 

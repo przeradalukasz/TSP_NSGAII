@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MathNet.Numerics.Integration;
+
 using Newtonsoft.Json;
 
 namespace TSP_NSGAII
@@ -14,8 +16,8 @@ namespace TSP_NSGAII
     {
         public static Town[] LoadTownsDataFromCsv(string path)
         {
-            var towns = new Town[TotalLines(@"C:\dj.csv")];
-            using (var fs = File.OpenRead(@"C:\dj.csv"))
+            var towns = new Town[TotalLines(path)];
+            using (var fs = File.OpenRead(path))
             using (var reader = new StreamReader(fs))
             {
                 int i = 0;
@@ -137,9 +139,120 @@ namespace TSP_NSGAII
             return adjMatrix;
         }
 
+        public static double[,] LoadCrispDistanceDataFromJson(string path)
+        {
+            double[,] adjMatrix;
+            using (StreamReader r = new StreamReader(path))
+            {
+                string json = r.ReadToEnd();
+                adjMatrix = JsonConvert.DeserializeObject<double[,]>(json);
+            }
+            return adjMatrix;
+        }
+
         public static double[,] Defuzzification(FuzzyNumber[,] fuzzyAdjacencyMatrix)
         {
-            throw new NotImplementedException();
+            var adjacencyMatrix = new double[fuzzyAdjacencyMatrix.GetLength(1), fuzzyAdjacencyMatrix.GetLength(1)];
+
+            for (int i = 1; i < fuzzyAdjacencyMatrix.GetLength(1); i++)
+            {
+                for (int j = i; j < fuzzyAdjacencyMatrix.GetLength(1); j++)
+                {
+                    adjacencyMatrix[i, j] = adjacencyMatrix[j, i] = CalculateStrictValue(fuzzyAdjacencyMatrix[i, j]);
+                }
+            }
+            return adjacencyMatrix; ;
         }
+
+        public static double CalculateStrictValue(FuzzyNumber fuzzyNumber)
+        {
+            var leftX = fuzzyNumber.M - fuzzyNumber.L;
+            var leftValue = fuzzyNumber.L;
+            var rightX = fuzzyNumber.U - fuzzyNumber.M;
+            var rightValue = fuzzyNumber.U;
+
+            var finalX = leftX - rightX;
+            var finalValue = rightValue + leftValue;
+            return SimpsonRule.IntegrateThreePoint(x => 0.5*(finalX * x + finalValue), 0.0, 1.0);
+            
+        }
+
+        public static object CalculateAverageDistanceAll(double[,] adjacencyMatrix)
+        {
+            double result = 0;
+            List<double> distances = new List<double>();
+            for (int i = 1; i < adjacencyMatrix.GetLength(1); i++)
+            {
+                for (int j = i; j < adjacencyMatrix.GetLength(1); j++)
+                {
+                    distances.Add(adjacencyMatrix[i, j]);
+                }
+            }
+            double average = distances.Average();
+
+
+
+            return average;
+        }
+
+        public static double CalculateStandardDeviationAll(double[,] adjacencyMatrix)
+        {
+            List<double> distances = new List<double>();
+            for (int i = 1; i < adjacencyMatrix.GetLength(1); i++)
+            {
+                for (int j = i; j < adjacencyMatrix.GetLength(1); j++)
+                {
+                    distances.Add(adjacencyMatrix[i, j]);
+                }
+            }
+            double average = distances.Average();
+            double sumOfSquaresOfDifferences = distances.Select(val => (val - average) * (val - average)).Sum();
+            double sd = Math.Sqrt(sumOfSquaresOfDifferences / distances.Count);
+
+
+            return sd;
+        }
+
+        public static double CalculateStandardDeviation(double[,] adjacencyMatrix, List<Town> towns)
+        {
+            List<double> distances = new List<double>();
+            foreach (var town in towns)
+            {
+                foreach (var town1 in towns)
+                {
+                    distances.Add(adjacencyMatrix[town.Id, town1.Id]);
+                }
+            }
+            double average = distances.Average();
+            double sumOfSquaresOfDifferences = distances.Select(val => (val - average) * (val - average)).Sum();
+            double sd = Math.Sqrt(sumOfSquaresOfDifferences / distances.Count);
+
+
+            return sd;
+        }
+
+        public static object CalculateAverageDistance(double[,] adjacencyMatrix, List<Town> towns)
+        {
+            double result = 0;
+            List<double> distances = new List<double>();
+            foreach (var town in towns)
+            {
+                foreach (var town1 in towns)
+                {
+                    distances.Add(adjacencyMatrix[town.Id, town1.Id]);
+                }
+            }
+            double average = distances.Average();
+            
+
+
+            return average;
+        }
+
+        public static List<Town> FilterByCounty(List<Town> towns, string[] countyName)
+        {
+            return towns.Where(town => countyName.Contains(town.County)).ToList();
+        }
+        
     }
 }

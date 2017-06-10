@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace TSP_NSGAII
 {
@@ -18,17 +19,27 @@ namespace TSP_NSGAII
         
         static void Main()
         {
-            Towns = Utils.LoadTownsDataFromCsv(@"C:\dj.csv").ToList();
+            //Towns = Utils.LoadTownsDataFromCsv(@"C:\MagisterkaDane\djj.csv").ToList();
+            //AdjacencyMatrix = Utils.CalculateDistanceMatrix(Towns);
 
-            //Towns = Utils.LoadTownsDataFromJson(@"C:\TSPData\towns.json");
-            //FuzzyNumber[,] fuzzyAdjacencyMatrix = Utils.LoadFuzzyDistanceDataFromJson(@"C:\TSPData\adjacencyMatrix.json");
+            //FuzzyNumber[,] fuzzyAdjacencyMatrix = Utils.LoadFuzzyDistanceDataFromJson(@"C:\MagisterkaDane\Dane\adjacencyMatrixNewHampshire.json");
             //AdjacencyMatrix = Utils.Defuzzification(fuzzyAdjacencyMatrix);
+            //string adjacencyMatrixJson = JsonConvert.SerializeObject(AdjacencyMatrix, Formatting.Indented);
+            //File.WriteAllText(@"C:\MagisterkaDane\Dane\StrictadjacencyMatrixNewHampshire.json", adjacencyMatrixJson);
+            //Belknap Carroll Cheshire Coos Grafton Hillsborough Merrimack Rockingham Strafford Sullivan 
+            Towns = Utils.LoadTownsDataFromJson(@"C:\MagisterkaDane\Dane\newHampshireCities.json");
 
-            AdjacencyMatrix = Utils.CalculateDistanceMatrix(Towns);
+            Towns = Utils.FilterByCounty(Towns,new []{ "Cheshire", "Hillsborough" });
+
+            AdjacencyMatrix = Utils.LoadCrispDistanceDataFromJson(@"C:\MagisterkaDane\Dane\crispAdjacencyMatrixNewHampshire.json");
+            var averageDistanceAll = Utils.CalculateAverageDistanceAll(AdjacencyMatrix);
+            var standardDeviationAll = Utils.CalculateStandardDeviationAll(AdjacencyMatrix);
+            var averageDistance = Utils.CalculateAverageDistance(AdjacencyMatrix, Towns);
+            var standardDeviation = Utils.CalculateStandardDeviation(AdjacencyMatrix, Towns);
 
             Population population = new Population(AdjacencyMatrix, Towns.ToArray(), 0.05, 0.95, 10, 500, rnd);
             
-            while (population.Generations < 150)
+            while (population.Generations < 10)
             {
                 population.NaturalSelection();
                 population.Generate();

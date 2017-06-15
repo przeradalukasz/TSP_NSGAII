@@ -90,7 +90,8 @@ namespace TSP_NSGAII
                 else
                 {
                     CalculateCrowdedDist(front);
-                    _matingPool.AddRange(front.Take(diff).ToList());
+                    var orderedFront = front.OrderBy(f => f.CrowdedDistance).ToList();
+                    _matingPool.AddRange(orderedFront.Take(diff).ToList());
                     break;
                 }
             }

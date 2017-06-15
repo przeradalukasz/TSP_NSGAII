@@ -58,8 +58,10 @@ namespace TSP_NSGAII
             return adjacencyMatrix;;
         }
 
+
         internal static void DrawResultPath(string path, Town[] towns)
         {
+
             int minX = (int)towns.Min(e => e.X);
             int minY = (int)towns.Min(e => e.Y);
             int maxX = (int)towns.Max(e => e.X);
@@ -152,6 +154,16 @@ namespace TSP_NSGAII
 
         public static double[,] Defuzzification(FuzzyNumber[,] fuzzyAdjacencyMatrix)
         {
+            //var adjacencyMatrix = new double[fuzzyAdjacencyMatrix.GetLength(1), fuzzyAdjacencyMatrix.GetLength(1)];
+
+            //for (int i = 1; i < fuzzyAdjacencyMatrix.GetLength(1); i++)
+            //{
+            //    for (int j = i; j < fuzzyAdjacencyMatrix.GetLength(1); j++)
+            //    {
+            //        adjacencyMatrix[i, j] = adjacencyMatrix[j, i] = fuzzyAdjacencyMatrix[i, j].M;
+            //    }
+            //}
+            //return adjacencyMatrix; 
             var adjacencyMatrix = new double[fuzzyAdjacencyMatrix.GetLength(1), fuzzyAdjacencyMatrix.GetLength(1)];
 
             for (int i = 1; i < fuzzyAdjacencyMatrix.GetLength(1); i++)
@@ -161,7 +173,7 @@ namespace TSP_NSGAII
                     adjacencyMatrix[i, j] = adjacencyMatrix[j, i] = CalculateStrictValue(fuzzyAdjacencyMatrix[i, j]);
                 }
             }
-            return adjacencyMatrix; ;
+            return adjacencyMatrix;
         }
 
         public static double CalculateStrictValue(FuzzyNumber fuzzyNumber)
@@ -253,6 +265,48 @@ namespace TSP_NSGAII
         {
             return towns.Where(town => countyName.Contains(town.County)).ToList();
         }
-        
+
+        public static List<Town> OrderTowns(List<Town> towns)
+        {
+            for (int i = 0; i < towns.Count; i++)
+            {
+                towns[i].Id = i+1;
+            }
+            return towns;
+        }
+
+        public static double[,] ChangeToMinutes(double[,] adjacencyMatrix)
+        {
+            for (int i = 0; i < adjacencyMatrix.GetLength(1); i++)
+            {
+                for (int j = 0; j < adjacencyMatrix.GetLength(1); j++)
+                {
+                    adjacencyMatrix[i, j] = Math.Round(adjacencyMatrix[i, j] / 60,2);
+                }
+            }
+            return adjacencyMatrix;
+        }
+
+
+        internal static double[,] CutUnnecesssaryElements(double[,] adjacencyMatrix, List<Town> towns)
+        {
+            var newAdjacencyMatrix = new double[towns.Count + 1, towns.Count + 1];
+            int i = 1;
+            foreach (var town1 in towns)
+            {
+                int j = 1;
+                foreach (var town2 in towns)
+                {
+
+                    newAdjacencyMatrix[i, j] = adjacencyMatrix[town1.Id, town2.Id];
+                    j++;
+                }
+                i++;
+            }
+
+
+           
+            return newAdjacencyMatrix; 
+        }
     }
 }

@@ -24,37 +24,73 @@ namespace TSP_NSGAII
 
             //FuzzyNumber[,] fuzzyAdjacencyMatrix = Utils.LoadFuzzyDistanceDataFromJson(@"C:\MagisterkaDane\Dane\adjacencyMatrixNewHampshire.json");
             //AdjacencyMatrix = Utils.Defuzzification(fuzzyAdjacencyMatrix);
+            
             //string adjacencyMatrixJson = JsonConvert.SerializeObject(AdjacencyMatrix, Formatting.Indented);
             //File.WriteAllText(@"C:\MagisterkaDane\Dane\StrictadjacencyMatrixNewHampshire.json", adjacencyMatrixJson);
             //Belknap Carroll Cheshire Coos Grafton Hillsborough Merrimack Rockingham Strafford Sullivan 
-            Towns = Utils.LoadTownsDataFromJson(@"C:\MagisterkaDane\Dane\newHampshireCities.json");
 
-            Towns = Utils.FilterByCounty(Towns,new []{ "Cheshire", "Hillsborough" });
+            Towns = Utils.LoadTownsDataFromJson(@"C:\MagisterkaDane\Dane\Sizes\100\average.json");
+            
+            //AdjacencyMatrix = Utils.CalculateDistanceMatrix(Towns);
+
+            //Towns = Utils.FilterByCounty(Towns,new []{ "Rockingham", "Cheshire", "Merrimack",  "Belknap", "Hillsborough", "Strafford", "Sullivan", "Carroll", "Coos" });
+            //Towns = Towns.Take(202).ToList();
+
+
 
             AdjacencyMatrix = Utils.LoadCrispDistanceDataFromJson(@"C:\MagisterkaDane\Dane\crispAdjacencyMatrixNewHampshire.json");
-            var averageDistanceAll = Utils.CalculateAverageDistanceAll(AdjacencyMatrix);
-            var standardDeviationAll = Utils.CalculateStandardDeviationAll(AdjacencyMatrix);
-            var averageDistance = Utils.CalculateAverageDistance(AdjacencyMatrix, Towns);
-            var standardDeviation = Utils.CalculateStandardDeviation(AdjacencyMatrix, Towns);
+            AdjacencyMatrix = Utils.CutUnnecesssaryElements(AdjacencyMatrix,Towns);
+            Towns = Utils.OrderTowns(Towns);
 
-            Population population = new Population(AdjacencyMatrix, Towns.ToArray(), 0.05, 0.95, 10, 500, rnd);
-            
-            while (population.Generations < 10)
+
+
+            //var averageDistanceAll = Utils.CalculateAverageDistanceAll(AdjacencyMatrix);
+            //var standardDeviationAll = Utils.CalculateStandardDeviationAll(AdjacencyMatrix);
+            //var averageDistance = Utils.CalculateAverageDistance(AdjacencyMatrix, Towns);
+            //var standardDeviation = Utils.CalculateStandardDeviation(AdjacencyMatrix, Towns);
+
+            //var count1 = Towns.Count(town => town.County.Equals("Rockingham"));
+            //var count2 = Towns.Count(town => town.County.Equals("Cheshire"));
+            //var count3 = Towns.Count(town => town.County.Equals("Merrimack"));
+            //var count4 = Towns.Count(town => town.County.Equals("Hillsborough"));
+            //var count5 = Towns.Count(town => town.County.Equals("Belknap"));
+            //var count6 = Towns.Count(town => town.County.Equals("Strafford"));
+            //var count7 = Towns.Count(town => town.County.Equals("Sullivan"));
+            //var count8 = Towns.Count(town => town.County.Equals("Carroll"));
+            //var count9 = Towns.Count(town => town.County.Equals("Coos"));
+
+
+            //string TownsJson = JsonConvert.SerializeObject(Towns, Formatting.Indented);
+            //File.WriteAllText(@"C:\MagisterkaDane\Dane\lol123.json", TownsJson);
+            List<Path> allTimeBest = new List<Path>();
+            List<Path> allTimeBestFirstFront = new List<Path>();
+            Population population = new Population(AdjacencyMatrix, Towns.ToArray(), 0.05, 0.95, 10, 1000, rnd);
+            for (int i = 0; i < 10; i++)
             {
+                population = new Population(AdjacencyMatrix, Towns.ToArray(), 0.05, 0.95, 10, 1000, rnd);
+                Console.WriteLine("Iteration: " + i + 1);
+                while (population.Generations < 200)
+                {
+                    population.NaturalSelection();
+                    population.Generate();
+                    Console.WriteLine("Gen" + population.Generations);
+                }
                 population.NaturalSelection();
-                population.Generate();
-                Console.WriteLine("Gen" + population.Generations);
+                allTimeBest.AddRange(population.Fronts[0]);
+                
             }
-            population.NaturalSelection();
 
-            Utils.SaveResultsToCsv2(@"C:\Users\lprzerad\Desktop\Results\results.csv", population.Fronts[0].ToArray());
+            allTimeBestFirstFront = population.GetNondominatedIndividuals(allTimeBest.ToArray());
+
+
+
+            Utils.SaveResultsToCsv2(@"C:\MagisterkaDane\Wyniki\allTimeBestPareto.csv", allTimeBest.ToArray());
+            Utils.SaveResultsToCsv2(@"C:\MagisterkaDane\Wyniki\allTimeBestFirstFrontPareto.csv", allTimeBestFirstFront.ToArray());
+
             
-            
-            Path bestDistance = population.Fronts[0].OrderBy(x => x.Distance).First();
-            Path bestUnbalancing = population.Fronts[0].OrderBy(x => x.UnbalancingDegree).First();
 
 
-            Utils.DrawResultPath(@"C:\Users\lprzerad\Desktop\Results\bestDistanceDrawn.bmp", bestDistance.Towns);
+            //Utils.DrawResultPath(@"C:\MagisterkaDane\Wyniki\bestDistanceDrawn.bmp", bestDistance.Towns);
             Console.WriteLine("Press any key...");
             Console.ReadLine();
 
